@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Select Semester</title>
+<link rel="stylesheet" href="css/futuristic.css"><link rel="stylesheet" href="css/theme.css"></head>
+<body>
+  <header class="header-hero">
+    <img src="img/hero.png" alt="Hero">
+    <div class="hero-content"><h1>Select Semester</h1><p id="branchName"></p></div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card large-panel" onclick="goSem(1)"><div><div class="card-accent accent-blue">Sem 1</div><div class="card-title">Semester 1</div><div class="card-desc">Fundamentals</div></div><div class="card-footer"><small class="small">Intro</small><button class="glow-btn">Open</button></div></div>
+      <div class="card large-panel" onclick="goSem(2)"><div><div class="card-accent accent-green">Sem 2</div><div class="card-title">Semester 2</div><div class="card-desc">Continuation</div></div><div class="card-footer"><small class="small">Intro</small><button class="glow-btn">Open</button></div></div>
+      <div class="card large-panel" onclick="goSem(3)"><div><div class="card-accent accent-purple">Sem 3</div><div class="card-title">Semester 3</div><div class="card-desc">Core branch subjects</div></div><div class="card-footer"><small class="small">Core</small><button class="glow-btn">Open</button></div></div>
+      <div class="card large-panel" onclick="goSem(4)"><div><div class="card-accent accent-orange">Sem 4</div><div class="card-title">Semester 4</div><div class="card-desc">Advanced topics</div></div><div class="card-footer"><small class="small">Future</small><button class="glow-btn">Open</button></div></div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('branchName').innerText = localStorage.getItem('selectedBranch') || '';
+    function goSem(n){
+      localStorage.setItem('selectedSemester', 'Semester ' + n);
+      location.href = 'subject.html';
+    }
+  </script>
+  <script type="module" src="js/theme.js"></script>
+</body>
+</html>

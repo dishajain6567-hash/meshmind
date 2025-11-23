@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="../css/futuristic.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    /* small admin-specific UI tweaks */
+    .wrap { max-width:1100px; margin:20px auto; padding:0 16px; }
+    header{ padding:18px 0; text-align:center; background:transparent }
+    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .controls input, .controls select { padding:8px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.08); min-width:160px; }
+    .tabs { display:flex; gap:12px; margin:18px 0; flex-wrap:wrap }
+    .tab { padding:10px 14px; border-radius:12px; cursor:pointer; background:linear-gradient(90deg,#f0f2f6,#eef2ff); color:var(--text); }
+    .tab.active{ box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform:translateY(-4px) }
+    .tabpanel { display:none; margin-top:8px }
+    .tabpanel.active { display:block }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px }
+    label{ display:block; margin-top:8px; font-weight:700; color:var(--muted) }
+    textarea, input[type="text"] { width:100%; padding:8px; border-radius:8px; border:1px solid var(--glass); background:transparent; color:var(--text) }
+    .small { color:var(--muted); font-size:0.9rem }
+    .inline { display:inline-flex; gap:8px; align-items:center; }
+    .add-sub-row { display:flex; gap:8px; margin-top:8px }
+    @media (max-width:760px){ .form-grid{grid-template-columns:1fr} }
+    .hero-img { width:100%; height:180px; object-fit:cover; border-radius:10px; margin-bottom:18px; }
+    .label-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img id="heroImg" class="hero-img" src="../img/hero.png" alt="Hero">
+      <h1>Admin Panel</h1>
+    </header>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div>
+          <strong>Signed in as:</strong> <span id="signedAs">Not signed in</span>
+        </div>
+
+        <div class="controls">
+          <input id="adminEmail" placeholder="admin@example.com" />
+          <input id="adminPass" placeholder="password" type="password" />
+          <button id="loginBtn" class="glow-btn">Login</button>
+<button id="logoutBtn" class="glow-btn" style="background:#ff6b6b;display:none">Logout</button>
+<button id="manageBtn" class="glow-btn" style="display:none">Manage Uploads</button>
+
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div class="label-row">
+          <div style="min-width:120px">
+            <label>Course</label>
+            <select id="selCourse"></select>
+          </div>
+
+          <div style="min-width:120px">
+            <label>Branch</label>
+            <select id="selBranch"></select>
+          </div>
+
+          <div style="min-width:140px">
+            <label>Semester</label>
+            <select id="selSemester"></select>
+          </div>
+
+          <div style="min-width:240px">
+            <label>Subject</label>
+            <select id="selSubject"></select>
+
+            <div class="add-sub-row">
+              <input id="newSubject" placeholder="Add subject (if missing)" />
+              <button id="addSubjectBtn" class="glow-btn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:right">
+          <div class="small">Current selection</div>
+          <div id="currentPath" class="small"></div>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="syllabus">Syllabus</div>
+        <div class="tab" data-tab="notes">Notes</div>
+        <div class="tab" data-tab="pyq">PYQ</div>
+        <div class="tab" data-tab="videos">Videos</div>
+        <div class="tab" data-tab="practicals">Practicals</div>
+      </div>
+
+      <!-- SYLLABUS -->
+      <div id="syllabus" class="tabpanel active">
+        <div class="form-grid">
+          <div>
+            <label>Unit 1</label>
+            <textarea id="s_u1" rows="3"></textarea>
+          </div>
+          <div>
+            <label>Unit 2</label>
+            <textarea id="s_u2" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label>Unit 3</label>
+            <textarea id="s_u3" rows="3"></textarea>
+          </div>
+          <div>
+            <label>Unit 4</label>
+            <textarea id="s_u4" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <button id="s_save" class="glow-btn">Save Syllabus</button>
+          <span id="s_msg" class="small"></span>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div id="notes" class="tabpanel">
+        <div class="form-grid">
+          <div>
+            <label>Title</label>
+            <input id="n_title" placeholder="Notes title" />
+          </div>
+          <div>
+            <label>Drive link (share link)</label>
+            <input id="n_link" placeholder="Google Drive share link or URL" />
+          </div>
+        </div>
+
+        <label>Description</label>
+        <textarea id="n_desc" rows="3"></textarea>
+
+        <div style="margin-top:8px">
+          <button id="n_save" class="glow-btn">Save Note</button>
+          <span id="n_msg" class="small"></span>
+        </div>
+      </div>
+
+      <!-- PYQ -->
+      <div id="pyq" class="tabpanel">
+        <div class="form-grid">
+          <div>
+            <label>Title</label>
+            <input id="p_title" placeholder="PYQ title" />
+          </div>
+          <div>
+            <label>Drive link</label>
+            <input id="p_link" placeholder="Drive link or URL" />
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <button id="p_save" class="glow-btn">Save PYQ</button>
+          <span id="p_msg" class="small"></span>
+        </div>
+      </div>
+
+      <!-- VIDEOS -->
+      <div id="videos" class="tabpanel">
+        <div class="form-grid">
+          <div>
+            <label>Video title / playlist</label>
+            <input id="v_title" placeholder="Video title / playlist name" />
+          </div>
+          <div>
+            <label>YouTube playlist or video URL</label>
+            <input id="v_link" placeholder="YouTube playlist URL or video URL" />
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <button id="v_save" class="glow-btn">Save Video</button>
+          <span id="v_msg" class="small"></span>
+        </div>
+      </div>
+
+      <!-- PRACTICALS -->
+      <div id="practicals" class="tabpanel">
+        <div class="form-grid">
+          <div>
+            <label>Practical title</label>
+            <input id="r_title" placeholder="Practical title" />
+          </div>
+          <div>
+            <label>Drive link (or resource URL)</label>
+            <input id="r_link" placeholder="Drive link or URL" />
+          </div>
+        </div>
+
+        <label>Procedure / notes</label>
+        <textarea id="r_desc" rows="3"></textarea>
+
+        <div style="margin-top:8px">
+          <button id="r_save" class="glow-btn">Save Practical</button>
+          <span id="r_msg" class="small"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- IMPORTANT: keep same imports / firebase.js path -->
+  <script type="module" src="../js/admin-common.js"></script>
+  <script type="module" src="../js/firebase.js"></script>
+  <script type="module" src="../js/theme.js"></script>
+
+  <script>
+    // hero image fallback: try default then local absolute path you provided earlier
+    const hero = document.getElementById('heroImg');
+    hero.onerror = () => {
+      // developer message asked to include the user-provided path as fallback
+      hero.src = "C:\\Users\\disha\\OneDrive\\Documents\\Screenshot 2025-11-23 082355.png";
+    };
+  </script>
+</body>
+</html>

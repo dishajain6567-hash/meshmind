@@ -1,0 +1,22 @@
+/* --- Purple label box for headings (Syllabus / Notes / Videos etc) --- */
+
+.resource-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #8a3cff, #a86bff);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: 0 6px 20px rgba(138, 60, 255, 0.25);
+    margin-bottom: 16px;
+    width: fit-content;
+}
+
+.resource-label i,
+.resource-label img,
+.resource-label span.icon {
+    font-size: 20px;
+}

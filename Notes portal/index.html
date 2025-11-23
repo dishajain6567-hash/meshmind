@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Notes Portal — Home</title>
+
+  <link rel="stylesheet" href="css/futuristic.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+  <!-- Theme Switch -->
+  <div style="position:fixed;right:20px;top:15px;z-index:200;">
+    <button id="light" style="padding:8px 12px;border-radius:8px;border:none;background:white;color:#222;cursor:pointer">🌞</button>
+    <button id="dark" style="padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.4);background:#111827;color:white;cursor:pointer">🌙</button>
+  </div>
+
+  <!-- Hero -->
+  <header class="header-hero">
+    <img src="img/hero.png" alt="Hero">
+    <div class="hero-content">
+      <h1>Notes Portal</h1>
+      <p>B.Tech • CSE / IT / AIML / AIDS / VLSI</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid center">
+
+      <!-- BTECH -->
+      <div class="card large-panel">
+        <div>
+          <div class="card-accent accent-purple">B.Tech</div>
+          <div class="card-title">Bachelor of Technology</div>
+          <div class="card-desc">Computer Science, IT, AI & Data Science, VLSI — Sem 1 to 4</div>
+        </div>
+
+        <div class="card-footer">
+          <small class="small">Start here</small>
+          <button class="glow-btn" id="openCourseBtn">Open</button>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="card large-panel">
+        <div>
+          <div class="card-accent accent-green">Admin</div>
+          <div class="card-title">Admin Panel</div>
+          <div class="card-desc">Upload syllabus, notes, PYQ, videos & practicals (Admin only)</div>
+        </div>
+
+        <div class="card-footer">
+          <small class="small">Restricted</small>
+          <button class="glow-btn" id="openAdminBtn">Admin</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer style="text-align:center;padding:20px;color:var(--muted);margin-top:40px;">
+    © Notes Portal
+  </footer>
+
+  <script type="module" src="js/theme.js"></script>
+
+  <script>
+    document.getElementById("openCourseBtn").onclick = () => {
+      localStorage.setItem("selectedCourse", "B.Tech");
+      location.href = "course.html";
+    };
+    document.getElementById("openAdminBtn").onclick = () => {
+      location.href = "admin/admin.html";
+    };
+  </script>
+
+</body>
+</html>

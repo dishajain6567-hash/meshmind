@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Practicals</title>
+<link rel="stylesheet" href="css/futuristic.css">
+<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body>
+<header class="header-hero">
+  <img src="img/hero.png" alt="Hero">
+  <div class="hero-content">
+    <h1>Practicals</h1>
+    <p id="ctx"></p>
+  </div>
+</header>
+
+<main>
+<section style="max-width:1000px;margin:20px auto;padding:0 18px;">
+  <div id="prList"></div>
+</section>
+</main>
+
+<script type="module">
+import { db } from './js/firebase.js';
+import { collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+const course = localStorage.getItem('selectedCourse') || 'B.Tech';
+const branch = localStorage.getItem('selectedBranch');
+const semester = localStorage.getItem('selectedSemester');
+const subject = localStorage.getItem('selectedSubject');
+
+document.getElementById('ctx').innerText =
+ `${course} • ${branch} • ${semester} • ${subject}`;
+
+const out = document.getElementById('prList');
+
+(async function load() {
+  try {
+    const docId = `${course}__${branch}__${semester}__${subject}`;
+    const q = query(collection(db, 'practicals', docId, 'items'), orderBy('timestamp','desc'));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      out.innerHTML = `<div class="card"><p class="card-desc">No practicals uploaded yet.</p></div>`;
+      return;
+    }
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const link = d.driveLink || '';
+
+      const el = document.createElement('div');
+      el.className = 'card';
+
+      el.innerHTML = `
+      <div>
+        <div class="card-title">${d.title}</div>
+        <div class="card-desc">${d.description || ''}</div>
+      </div>
+
+      <div class="card-footer">
+        
+        ${link ?
+          `<a class="glow-btn" href="preview.html?url=${encodeURIComponent(link)}" target="_blank">Open</a>` :
+          `<span class="small">No link</span>`}
+      </div>`;
+
+      out.appendChild(el);
+    });
+
+  } catch (e) {
+    out.innerHTML = `<div class="card"><p class="card-desc">Error: ${e.message}</p></div>`;
+  }
+})();
+</script>
+
+<script type="module" src="js/theme.js"></script>
+</body>
+</html>

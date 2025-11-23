@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subject Options</title>
+<link rel="stylesheet" href="css/futuristic.css"><link rel="stylesheet" href="css/theme.css"></head>
+<body>
+  <header class="header-hero">
+    <img src="img/hero.png" alt="Hero">
+    <div class="hero-content"><h1 id="subjectTitle"></h1><p id="subjectContext"></p></div>
+  </header>
+
+  <main>
+    <section class="grid center" id="optionsGrid"></section>
+  </main>
+
+  <script>
+    const subj = localStorage.getItem('selectedSubject') || 'Subject';
+    const branch = localStorage.getItem('selectedBranch') || '';
+    const sem = localStorage.getItem('selectedSemester') || '';
+    document.getElementById('subjectTitle').innerText = subj;
+    document.getElementById('subjectContext').innerText = `${branch} • ${sem}`;
+    const grid = document.getElementById('optionsGrid');
+    const opts = [
+      {k:'syllabus', t:'📘 Syllabus'},
+      {k:'notes', t:'📝 Notes'},
+      {k:'pyq', t:'📚 PYQ'},
+      {k:'videos', t:'🎥 Videos'},
+      {k:'practicals', t:'🔬 Practicals'}
+    ];
+    opts.forEach(o=>{
+      const d=document.createElement('div');
+      d.className='card large-panel';
+      d.innerHTML=`<div><div class="card-accent accent-purple">${o.t.split(' ')[0]}</div>
+      <div class="card-title">${o.t}</div>
+      <div class="card-desc">Open ${o.t.toLowerCase()} for ${subj}</div></div>
+      <div class="card-footer"><small class="small">${branch}</small><button class="glow-btn">Open</button></div>`;
+      d.onclick = ()=> location.href = `${o.k}.html`;
+      grid.appendChild(d);
+    });
+  </script>
+  <script type="module" src="js/theme.js"></script>
+</body>
+</html>

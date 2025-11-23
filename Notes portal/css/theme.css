@@ -1,0 +1,187 @@
+/* ==========================================
+   GLOBAL THEME FIXED — LIGHT + DARK PERFECT
+========================================== */
+
+:root {
+  --bg: #f4f7fb;               /* LIGHT MODE BACKGROUND */
+  --card: #ffffff;             /* Card white in light mode */
+  --text: #0a0f1a;             /* Dark navy text (perfect visibility) */
+  --muted: #4b5563;
+  --accent: #6c63ff;
+  --accent-2: #9b5fff;
+  --glass: rgba(0,0,0,0.06);
+  --radius: 16px;
+  --shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b0f17;               /* DARK MODE BACKGROUND */
+  --card: #101826;             /* Dark blue card */
+  --text: #e8eef9;             /* Bright white text */
+  --muted: #9aa6b2;           
+  --accent: #64d3ff;
+  --accent-2: #a86bff;
+  --glass: rgba(255,255,255,0.05);
+  --shadow: 0 10px 30px rgba(0,0,0,0.55);
+}
+
+/* ==========================================
+   BASE
+========================================== */
+
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", system-ui, Arial;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: 0.3s background, 0.3s color;
+}
+
+/* ==========================================
+   HERO SECTION
+========================================== */
+
+.header-hero {
+  width: 100%;
+  height: 260px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.header-hero img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  filter: brightness(0.72) contrast(1.15);  /* MUCH CLEARER NOW */
+}
+
+.hero-content {
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.45);
+}
+
+.hero-content h1 {
+  font-size: 42px;
+  margin: 0 0 6px 0;
+  font-weight: 800;
+  color: white;  /* ALWAYS VISIBLE */
+}
+
+.hero-content p {
+  color: white;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+/* ==========================================
+   GRID LAYOUT
+========================================== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px 80px;
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+.card {
+  background: var(--card);
+  padding: 28px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass);
+  box-shadow: var(--shadow);
+  transition: 0.2s transform;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+}
+
+/* Headers inside card */
+.card-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.card-desc {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ==========================================
+   TAGS
+========================================== */
+.card-accent {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 14px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.accent-purple {
+  background: linear-gradient(90deg, #9b5fff, #6c63ff);
+}
+
+.accent-green {
+  background: linear-gradient(90deg, #00c9a7, #5fe3b6);
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+.card-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.glow-btn {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  padding: 10px 18px;
+  color: white;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.glow-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+@media(max-width:720px){
+  .hero-content h1 { font-size: 30px; }
+  .grid { gap: 22px; }
+}

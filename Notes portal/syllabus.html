@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syllabus</title>
+
+<link rel="stylesheet" href="css/futuristic.css">
+<link rel="stylesheet" href="css/theme.css">
+
+<style>
+.page-box {
+  max-width: 900px;
+  margin: 40px auto;
+  background: var(--card);
+  padding: 26px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.back-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  border:none;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<header class="header-hero">
+  <img src="img/hero.png">
+  <div class="hero-content">
+    <h1>Syllabus</h1>
+    <p id="path"></p>
+  </div>
+</header>
+
+<div class="page-box">
+  <h2 id="title"></h2>
+  <p>Below is the syllabus PDF / link:</p>
+
+  <div id="contentBox"></div>
+
+  <br><button class="back-btn" onclick="history.back()">⬅ Back</button>
+</div>
+
+<script type="module" src="js/theme.js"></script>
+<script>
+const course  = localStorage.getItem("selectedCourse");
+const branch  = localStorage.getItem("selectedBranch");
+const sem     = localStorage.getItem("selectedSemester");
+const subject = localStorage.getItem("selectedSubject");
+
+document.getElementById("path").innerText = `${course} • ${branch} • ${sem}`;
+document.getElementById("title").innerText = subject + " - Syllabus";
+
+// LOAD FROM FIREBASE LATER — for now placeholder
+document.getElementById("contentBox").innerHTML = `
+  <a href="#" style="color:var(--accent-2);font-weight:700;">Upload syllabus from admin panel</a>
+`;
+</script>
+
+</body>
+</html>
