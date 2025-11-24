@@ -1,16 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Admin — Manage Uploads</title>
 
-  <!-- existing theme + layout -->
   <link rel="stylesheet" href="../css/futuristic.css">
   <link rel="stylesheet" href="../css/theme.css">
 
   <style>
-    /* small admin-specific styles */
     .wrap { max-width:1200px; margin:28px auto; padding:0 18px; }
     .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
     .section { background:var(--card); padding:18px; border-radius:14px; border:1px solid var(--glass); box-shadow:var(--shadow); margin-top:20px; }
@@ -25,7 +23,7 @@
     .badge { background:rgba(0,0,0,0.06); padding:6px 10px; border-radius:8px; font-weight:700; color:var(--muted); }
     .empty { color:var(--muted); padding:14px; text-align:center; }
     a.open-link { text-decoration:none; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:white; padding:8px 12px; border-radius:10px; font-weight:700; }
-
+    select,input { padding:8px;border-radius:8px;border:1px solid var(--glass); background:transparent;color:var(--text) }
     @media(max-width:800px){ .top { flex-direction:column; align-items:flex-start } .item { flex-direction:column; align-items:flex-start } .actions { margin-top:8px } }
   </style>
 </head>
@@ -40,6 +38,7 @@
   </header>
 
   <main class="wrap">
+
     <div class="top">
       <div>
         <div style="font-weight:800;font-size:18px">Manage uploads</div>
@@ -47,84 +46,121 @@
       </div>
 
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="refreshBtn" class="small-btn glow-btn">Refresh</button>
         <button id="goAdmin" class="small-btn glow-btn">Open Admin Panel</button>
+        <button id="refreshBtn" class="small-btn glow-btn">Refresh</button>
       </div>
     </div>
 
-    <!-- filters & quick stats -->
+    <!-- selector (choose which docId to manage) -->
     <div class="section">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
-        <div>
-          <strong>Filter by type:</strong>
-          <div class="filter-row" style="margin-top:8px">
-            <button class="small-btn badge" data-type="all">All</button>
-            <button class="small-btn badge" data-type="notes">Notes</button>
-            <button class="small-btn badge" data-type="pyq">PYQ</button>
-            <button class="small-btn badge" data-type="videos">Videos</button>
-            <button class="small-btn badge" data-type="practicals">Practicals</button>
-            <button class="small-btn badge" data-type="syllabus">Syllabus</button>
-            <button class="glow-btn" onclick="deleteItem('notes', docId, itemId)">Delete</button>
-
-
-            <input id="searchInput" placeholder="Search title / uploader / parent" style="margin-left:8px;padding:8px;border-radius:10px;border:1px solid var(--glass)">
-          </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <div style="min-width:160px;">
+          <label style="font-weight:700">Course</label>
+          <select id="selCourse"></select>
+        </div>
+        <div style="min-width:160px;">
+          <label style="font-weight:700">Branch</label>
+          <select id="selBranch"></select>
+        </div>
+        <div style="min-width:160px;">
+          <label style="font-weight:700">Semester</label>
+          <select id="selSemester"></select>
+        </div>
+        <div style="min-width:260px;">
+          <label style="font-weight:700">Subject</label>
+          <select id="selSubject"></select>
         </div>
 
-        <div class="meta" id="counts">Loading...</div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <button id="loadBtn" class="glow-btn">Load uploads</button>
+          <div class="meta" id="currentPath" style="white-space:nowrap"></div>
+        </div>
       </div>
     </div>
 
-    <!-- lists -->
+    <!-- list area -->
     <div id="listsContainer" class="section">
       <div id="itemsList" class="list"></div>
       <div id="empty" class="empty" style="display:none">No items found.</div>
     </div>
   </main>
 
+  <!-- use the shared admin-common.js helpers; it exposes window.adminHelpers when loaded -->
+  <script type="module" src="../js/admin-common.js"></script>
+
   <script type="module">
     import { auth, db, ADMIN_UID } from '../js/firebase.js';
-    import { collectionGroup, getDocs, query, orderBy, collection, getDocs as getDocsCol, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { collection, collectionGroup, query, orderBy, getDocs, getDocs as getDocsCol, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-async function deleteItem(type, docId, itemId) {
-  if (!confirm("Delete permanently?")) return;
-  try {
-    await deleteDoc(doc(db, type, docId, "items", itemId));
-    alert("Deleted!");
-    loadItems();
-  } catch (e) {
-    alert("Error: " + e.message);
-  }
-}
-
-
+    // DOM refs
     const signedInfo = document.getElementById('signedInfo');
     const itemsList = document.getElementById('itemsList');
-    const countsEl = document.getElementById('counts');
-    const searchInput = document.getElementById('searchInput');
     const emptyEl = document.getElementById('empty');
     const refreshBtn = document.getElementById('refreshBtn');
     const goAdmin = document.getElementById('goAdmin');
+    const loadBtn = document.getElementById('loadBtn');
+    const selCourse = document.getElementById('selCourse');
+    const selBranch = document.getElementById('selBranch');
+    const selSemester = document.getElementById('selSemester');
+    const selSubject = document.getElementById('selSubject');
+    const currentPathEl = document.getElementById('currentPath');
 
-    let allItems = [];    // in-memory list of items from collectionGroup
-    let syllabusDocs = []; // syllabus docs list
-    let currentFilter = 'all';
+    // Populate selects (must match admin-common.js lists)
+    const COURSES = ["B.Tech"];
+    const BRANCHES = ["CSE","IT","AIML","AIDS","VLSI"];
+    const COMMON_SEM12 = [
+      "Applied Chemistry","Applied Mathematics I","Applied Physics I",
+      "Communication Skills","Engineering Graphics","Engineering Mechanics",
+      "Electrical Science","Environmental Science","Human Values and Professional Ethics",
+      "Indian Constitution","Manufacturing Processes","Programming in C","Workshop Practice"
+    ];
+    const SUBJECTS_BY_BRANCH = {
+      CSE:{3:["Digital Logic Design","Discrete Mathematics","Data Structures","Object Oriented Programming","Probability, Statistics & Linear Algebra","Foundation of Data Science","Principles of Artificial Intelligence","Computational Methods","Universal Human Values II"], 4:["Design and Analysis of Algorithms","Database Management Systems","Computer Organization","Operating Systems","Computer Networks","Software Engineering","Numerical Methods"]},
+      IT:{3:["Digital Logic Design","Discrete Mathematics","Data Structures","Object Oriented Programming","Probability, Statistics & Linear Algebra","Foundation of Data Science","Principles of Artificial Intelligence","Computational Methods","Universal Human Values II"],4:["Database Management Systems","Operating Systems","Computer Networks","Web Technologies","Software Engineering","Internet of Things (Intro)"]},
+      AIML:{3:["Data Structures","Discrete Mathematics","Probability, Statistics & Linear Algebra","Object Oriented Programming","Foundation of Data Science","Principles of Artificial Intelligence","Machine Learning Basics","Universal Human Values II"],4:["Machine Learning I","Data Mining","Linear Algebra for ML","Statistics for ML","Python for Data Science"]},
+      AIDS:{3:["Data Structures","Discrete Mathematics","Probability, Statistics & Linear Algebra","Object Oriented Programming","Foundation of Data Science","Principles of Artificial Intelligence","Data Analysis Basics","Universal Human Values II"],4:["Machine Learning I","Data Visualization","APIs & Data Engineering Basics","Intro to Neural Networks"]},
+      VLSI:{3:["Digital Logic Design","Electronic Devices and Circuits","Signals and Systems (intro)","Fundamentals of VLSI","Discrete Mathematics","Computational Methods"],4:["VLSI Design Basics","CMOS Technology","Microprocessors and Interfacing","Analog Circuits"]}
+    };
 
-    goAdmin.onclick = () => location.href = 'admin.html';
+    function fillSelects(){
+      selCourse.innerHTML = COURSES.map(c=>`<option>${c}</option>`).join('');
+      selBranch.innerHTML = BRANCHES.map(b=>`<option>${b}</option>`).join('');
+      selSemester.innerHTML = [1,2,3,4].map(n=>`<option value="${n}">Semester ${n}</option>`).join('');
+      fillSubjects();
+      updatePath();
+    }
+    function fillSubjects(){
+      const branch = selBranch.value;
+      const sem = Number(selSemester.value);
+      selSubject.innerHTML = '';
+      let arr = [];
+      if(sem === 1 || sem === 2) arr = COMMON_SEM12.slice();
+      else arr = (SUBJECTS_BY_BRANCH[branch] && SUBJECTS_BY_BRANCH[branch][sem]) ? SUBJECTS_BY_BRANCH[branch][sem].slice() : [];
+      arr.forEach(s => selSubject.appendChild(Object.assign(document.createElement('option'), { value:s, textContent:s })));
+      selSubject.appendChild(Object.assign(document.createElement('option'), { value:'__other__', textContent:'— Add/Other —' }));
+    }
+    function updatePath(){ currentPathEl.innerText = `${selCourse.value} • ${selBranch.value} • Semester ${selSemester.value} • ${selSubject.value}`; }
 
-    // only allow ADMIN_UID to manage
-    onAuthStateChanged(auth, user => {
-      if(!user) {
-        signedInfo.innerText = 'Not signed in — please sign in via Admin Panel';
+    selBranch.addEventListener('change', ()=>{ fillSubjects(); updatePath(); });
+    selSemester.addEventListener('change', ()=>{ fillSubjects(); updatePath(); });
+    selSubject.addEventListener('change', updatePath);
+    selCourse.addEventListener('change', updatePath);
+    fillSelects();
+
+    goAdmin.onclick = ()=> location.href = 'admin.html';
+    refreshBtn.onclick = ()=> loadListForCurrent();
+
+    // require admin login
+    onAuthStateChanged(auth, user=>{
+      if(!user){
+        signedInfo.innerText = 'Not signed in — open Admin Panel to sign in';
         signedInfo.style.color = 'var(--muted)';
         itemsList.innerHTML = '';
         emptyEl.style.display = 'block';
         emptyEl.innerText = 'You must sign in as admin to manage uploads.';
         return;
       }
-      // check uid
       if(user.uid !== ADMIN_UID){
         signedInfo.innerText = `Signed in as ${user.email} — not authorized`;
         itemsList.innerHTML = '';
@@ -133,254 +169,86 @@ async function deleteItem(type, docId, itemId) {
         return;
       }
       signedInfo.innerText = `Signed in as ${user.email} (${user.uid})`;
-      signedInfo.style.color = 'var(--muted)';
-      loadAll();
-    });
-
-    // load everything: items (notes/pyq/videos/practicals) from collectionGroup('items'),
-    // and syllabus docs from collection('syllabus')
-    async function loadAll(){
-      itemsList.innerHTML = '';
       emptyEl.style.display = 'none';
-      countsEl.innerText = 'Loading...';
-
-      allItems = [];
-      syllabusDocs = [];
-
-      try{
-        // fetch all items across all parent collections (notes, pyq, videos, practicals)
-        const q = query(collectionGroup(db, 'items'), orderBy('timestamp','desc'));
-        const snap = await getDocs(q);
-        snap.forEach(docSnap => {
-          const data = docSnap.data();
-          // docRef path e.g. "notes/B.Tech__CSE__Semester 1__Applied Chemistry/items/autoId"
-          const fullPath = docSnap.ref.path;
-          const parts = fullPath.split('/'); // ['notes', '<docId>', 'items', '<itemId>']
-          const parentCollection = parts[0]; // e.g. notes, pyq, videos, practicals
-          const parentDocId = parts[1];      // the composite doc id with course__branch__...
-          const itemId = parts[3];
-          allItems.push({
-            id: itemId,
-            parentCollection,
-            parentDocId,
-            title: data.title || data.name || '(no title)',
-            uploaderName: data.uploaderName || data.uploader || '',
-            driveLink: data.driveLink || '',
-            youtubeUrl: data.youtubeUrl || '',
-            desc: data.description || data.desc || '',
-            ref: docSnap.ref
-          });
-        });
-
-        // fetch syllabus docs (top-level documents)
-        const sy = await getDocsCol(collection(db, 'syllabus'));
-        sy.forEach(d => {
-          syllabusDocs.push({
-            id: d.id,
-            title: d.id, // contains composite path usually
-            data: d.data(),
-            ref: d.ref
-          });
-        });
-
-        // update counts & render
-        updateCounts();
-        renderList();
-      }catch(err){
-        itemsList.innerHTML = `<div class="empty">Error loading items: ${err.message}</div>`;
-      }
-    }
-
-    function updateCounts(){
-      const counts = allItems.reduce((acc, it) => {
-        acc[it.parentCollection] = (acc[it.parentCollection]||0)+1;
-        return acc;
-      }, {});
-      const notes = counts.notes||0, pyq = counts.pyq||0, videos = counts.videos||0, practicals = counts.practicals||0, syllabus = syllabusDocs.length;
-      countsEl.innerText = `Notes:${notes} · PYQ:${pyq} · Videos:${videos} · Practicals:${practicals} · Syllabus:${syllabus}`;
-    }
-
-    function renderList(){
-      const queryText = (searchInput.value||'').toLowerCase().trim();
-      itemsList.innerHTML = '';
-
-      // helper to check filter
-      const passes = x => {
-        if(currentFilter !== 'all' && x.type !== currentFilter) return false;
-        if(!queryText) return true;
-        // search in title, uploader, parentDocId
-        return (x.title || '').toLowerCase().includes(queryText) ||
-               (x.uploaderName || '').toLowerCase().includes(queryText) ||
-               (x.parentDocId || '').toLowerCase().includes(queryText);
-      };
-      
-
-
-      // render collection items
-      const mapped = allItems.map(it => ({
-        type: it.parentCollection,
-        id: it.id,
-        title: it.title,
-        uploaderName: it.uploaderName,
-        parentDocId: it.parentDocId,
-        driveLink: it.driveLink,
-        youtubeUrl: it.youtubeUrl,
-        desc: it.desc,
-        ref: it.ref
-      }));
-
-      const filtered = mapped.filter(passes);
-
-      // syllabus are separate type
-      const syllabusMapped = syllabusDocs.map(s=>({
-        type: 'syllabus',
-        id: s.id,
-        title: s.id,
-        uploaderName: s.data.updatedBy||'',
-        parentDocId: s.id,
-        driveLink: s.data.link || '',
-        desc: `Syllabus (units may be in doc).`
-      })).filter(passes);
-
-      // merge (show items first, then syllabus)
-      const merged = [...filtered, ...syllabusMapped];
-
-      if(merged.length === 0){
-        emptyEl.style.display = 'block';
-        emptyEl.innerText = 'No items found for current filter / search.';
-        return;
-      } else {
-        emptyEl.style.display = 'none';
-      }
-
-      merged.forEach(it => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'item';
-
-        const left = document.createElement('div');
-        left.style.flex = '1';
-
-        const t = document.createElement('div');
-        t.className = 'title';
-        t.innerText = it.title;
-        left.appendChild(t);
-
-        const m = document.createElement('div');
-        m.className = 'meta';
-        m.innerHTML = `<strong>${it.type.toUpperCase()}</strong> • ${it.parentDocId} ${it.uploaderName? ' • ' + it.uploaderName : ''}`;
-        left.appendChild(m);
-
-        if(it.desc){
-          const d = document.createElement('div');
-          d.className = 'meta';
-          d.style.marginTop = '6px';
-          d.innerText = it.desc;
-          left.appendChild(d);
-        }
-
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-
-        // open link buttons
-        if(it.driveLink){
-          const a = document.createElement('a');
-          a.className = 'open-link';
-          a.href = it.driveLink;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.innerText = 'Open';
-          actions.appendChild(a);
-
-          // download button for drive (uc?download link may be provided)
-          const dl = document.createElement('button');
-          dl.className = 'small-btn';
-          dl.innerText = 'Open in new';
-          dl.onclick = ()=> window.open(it.driveLink, '_blank', 'noopener');
-          actions.appendChild(dl);
-        } else if(it.youtubeUrl){
-          const a = document.createElement('a');
-          a.className = 'open-link';
-          a.href = it.youtubeUrl;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.innerText = 'Watch';
-          actions.appendChild(a);
-        } else {
-          const no = document.createElement('span');
-          no.className = 'meta';
-          no.innerText = '';
-          actions.appendChild(no);
-        }
-
-        // delete button (confirm)
-        const del = document.createElement('button');
-        del.className = 'danger';
-        del.innerText = 'Delete';
-        del.onclick = async () => {
-          const ok = confirm(`Delete "${it.title}" (${it.type}) permanently?`);
-          if(!ok) return;
-          try{
-            // if we have a doc ref in 'ref' (items), delete directly; if syllabus, delete via doc path
-            if(it.ref && it.ref.delete){
-              // docRef is a DocumentReference — use deleteDoc
-              await deleteDoc(it.ref);
-            } else {
-              // no ref (rare) — try build path: (type / parentDocId / items / id) or (syllabus/id)
-              if(it.type === 'syllabus'){
-                await deleteDoc(it.ref); // we built ref earlier — should exist
-              } else {
-                // fallback: attempt to build correct doc path and delete
-                // parentCollection/docId/items/itemId
-                await deleteDoc(doc(db, it.type, it.parentDocId, 'items', it.id));
-              }
-            }
-            itemEl.remove();
-          }catch(e){
-            alert('Delete failed: ' + e.message);
-          }
-        };
-        actions.appendChild(del);
-
-        itemEl.appendChild(left);
-        itemEl.appendChild(actions);
-        itemsList.appendChild(itemEl);
-      });
-    }
-
-    // filter buttons
-    document.querySelectorAll('[data-type]').forEach(b=>{
-      b.addEventListener('click', () => {
-        currentFilter = b.dataset.type;
-        renderList();
-      });
+      loadListForCurrent();
     });
 
-    // live search
-    searchInput.addEventListener('input', () => renderList());
+    async function loadListForCurrent(){
+      const subj = selSubject.value;
+      if(!subj || subj === '__other__'){ alert('Choose a subject (or add in Admin Panel)'); return; }
+      const docId = `${selCourse.value}__${selBranch.value}__Semester ${selSemester.value}__${subj}`;
+      // call shared helper (admin-common.js exposes window.adminHelpers)
+      if(window.adminHelpers && typeof window.adminHelpers.listUploadsFor === 'function'){
+        // this helper fills a container with id 'manageList' by default — but our page uses itemsList.
+        // We'll call the helper with our container id 'itemsList'
+        await window.adminHelpers.listUploadsFor(docId, 'itemsList');
+        // replace produced elements: admin-common.renderCard returns .card elements; our CSS expects .item
+        // For compatibility, convert .card markup (if any) into .item style; but admin-common renders .card .card-title etc.
+        // We'll leave the helper's output; if none, show empty message.
+        if(document.getElementById('itemsList').children.length === 0){
+          emptyEl.style.display = 'block';
+          emptyEl.innerText = 'No uploads found for this subject.';
+        } else {
+          emptyEl.style.display = 'none';
+        }
+      } else {
+        // fallback: manually query firestore collections
+        await manualLoad(docId);
+      }
+      updatePath();
+    }
 
-    refreshBtn.addEventListener('click', () => loadAll());
+    // fallback manual loader (if adminHelpers missing)
+    async function manualLoad(docId){
+      itemsList.innerHTML = '';
+      const collectionsToCheck = ['notes','pyq','videos','practicals'];
+      let found = 0;
+      for(const col of collectionsToCheck){
+        try{
+          const q = query(collection(db, col, docId, 'items'), orderBy('timestamp','desc'));
+          const snap = await getDocs(q);
+          if(snap.empty) continue;
+          snap.forEach(snapDoc=>{
+            found++;
+            const data = snapDoc.data();
+            const title = data.title || '(no title)';
+            const uploader = data.uploaderName || 'Admin';
+            const link = data.driveLink || data.youtubeUrl || '';
+            const itemEl = document.createElement('div'); itemEl.className = 'item';
+            const left = document.createElement('div'); left.style.flex = '1';
+            const t = document.createElement('div'); t.className = 'title'; t.innerText = title;
+            const m = document.createElement('div'); m.className = 'meta'; m.innerText = `${col.toUpperCase()} • ${docId} ${uploader? ' • ' + uploader : ''}`;
+            left.appendChild(t); left.appendChild(m);
+            const actions = document.createElement('div'); actions.className = 'actions';
+            if(link){
+              const a = document.createElement('a'); a.className='open-link'; a.href = link; a.target='_blank'; a.rel='noopener'; a.innerText = 'Open';
+              actions.appendChild(a);
+            }
+            const del = document.createElement('button'); del.className='danger'; del.innerText='Delete';
+            del.onclick = async ()=>{ if(!confirm('Delete?')) return; await deleteDoc(doc(db, col, docId, 'items', snapDoc.id)); itemEl.remove(); };
+            actions.appendChild(del);
+            itemEl.appendChild(left); itemEl.appendChild(actions);
+            itemsList.appendChild(itemEl);
+          });
+        }catch(e){
+          console.error(e);
+        }
+      }
+      if(found === 0){
+        emptyEl.style.display = 'block';
+        emptyEl.innerText = 'No uploads found for this subject.';
+      } else emptyEl.style.display = 'none';
+    }
 
-    // initial small delay to ensure auth state fires
-    setTimeout(()=>{ if(!auth.currentUser) signedInfo.innerText = 'Not signed in — please sign in via Admin Panel'; }, 800);
-import { auth, ADMIN_UID } from '../js/firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    // hook load button
+    loadBtn.addEventListener('click', () => loadListForCurrent());
 
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    alert("Please login to continue");
-    window.location.href = "admin.html";
-    return;
-  }
+    // initial
+    // small defensive delay to let auth state settle
+    setTimeout(()=>{ if(!auth.currentUser) signedInfo.innerText = 'Not signed in — open Admin Panel to sign in'; }, 700);
 
-  if (user.uid !== ADMIN_UID) {
-    document.getElementById("itemsBox").innerHTML =
-      `<div class="card"><p class="card-desc">You do not have permission.</p></div>`;
-    return;
-  }
-
-  // ---- Admin verified → now load items ----
-  loadItems();
-});
+    // expose helper to allow admin-common delete to refresh this page, if they call window.adminHelpers.deleteItem
+    window.manageRefresh = () => { loadListForCurrent(); };
 
   </script>
 
