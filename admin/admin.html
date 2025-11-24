@@ -1,190 +1,129 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Panel — Notes Portal</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Panel</title>
 
   <link rel="stylesheet" href="../css/futuristic.css">
   <link rel="stylesheet" href="../css/theme.css">
 
   <style>
-    .wrap { max-width:1100px; margin:22px auto; padding:0 18px; }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap }
-    .panel { background:var(--card); padding:18px; border-radius:12px; border:1px solid var(--glass); box-shadow:var(--shadow); margin-top:16px; }
-    label { display:block; font-weight:700; margin-bottom:6px; color:var(--text); }
-    select, input[type="text"], textarea { padding:10px;border-radius:8px;border:1px solid var(--glass); width:100%; background:transparent; color:var(--text) }
-    textarea { min-height:80px; resize:vertical }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px }
-    .full { grid-column:1/-1 }
-    .help { color:var(--muted); font-size:0.95rem; margin-top:10px }
-    .controls { display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:12px }
-    @media(max-width:880px){ .grid{ grid-template-columns:1fr } .controls{ justify-content:flex-start } }
+    .tabs { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap }
+    .tab { padding:10px 14px; border-radius:12px; cursor:pointer; background:linear-gradient(90deg,#1f2937,#111827); color:#fff; }
+    .tab.active{ box-shadow:0 10px 40px rgba(0,0,0,0.45); transform:translateY(-4px) }
+    .tabpanel{ display:none; margin-top:12px }
+    .tabpanel.active{ display:block }
+
+    .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+
+    select,input,textarea{
+      padding:10px;border-radius:10px;border:1px solid var(--glass);
+      width:100%; background:transparent;color:var(--text);
+    }
   </style>
 </head>
+
 <body>
-  <header style="padding:18px;background:var(--card);border-bottom:1px solid var(--glass);">
-    <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <h2 style="margin:0">Admin Panel</h2>
-        <div class="help">Upload syllabus / notes / PYQ / videos / practicals — dropdowns only (no typing)</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="adminEmail" placeholder="admin email" style="padding:8px;border-radius:8px"/>
-        <input id="adminPass" placeholder="password" type="password" style="padding:8px;border-radius:8px"/>
-        <button id="loginBtn" class="glow-btn">Login</button>
-        <button id="logoutBtn" class="glow-btn" style="background:#ff6b6b;display:none">Logout</button>
-        <button id="manageBtn" class="glow-btn" style="display:none">Manage Uploads</button>
-      </div>
+<header style="padding:18px;text-align:center;background:var(--card)">
+  <h1>Admin Panel</h1>
+</header>
+
+<main style="max-width:1000px;margin:20px auto;padding:0 16px;">
+<div class="card">
+
+  <!-- LOGIN AREA -->
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+    <div><strong>Signed in as:</strong> <span id="signedAs">Not signed in</span></div>
+
+    <div style="display:flex;gap:8px;">
+      <input id="adminEmail" placeholder="admin@example.com">
+      <input id="adminPass" placeholder="password" type="password">
+      <button id="loginBtn" class="glow-btn">Login</button>
+      <button id="logoutBtn" class="glow-btn" style="background:#ff6b6b;display:none">Logout</button>
     </div>
-  </header>
+  </div>
+</div>
 
-  <main class="wrap">
-    <div class="panel">
-      <div class="grid">
-        <div>
-          <label>Course</label>
-          <select id="courseSelect">
-            <option>B.Tech</option>
-          </select>
-        </div>
+<!-- DROPDOWNS -->
+<div class="card" style="margin-top:16px;">
+  <h3>Select Course / Branch / Semester / Subject</h3>
 
-        <div>
-          <label>Branch</label>
-          <select id="branchSelect">
-            <option>CSE</option>
-            <option>IT</option>
-            <option>AIML</option>
-            <option>AIDS</option>
-            <option>VLSI</option>
-          </select>
-        </div>
+  <div class="grid">
+    <select id="selCourse"></select>
+    <select id="selBranch"></select>
+    <select id="selSemester"></select>
+    <select id="selSubject"></select>
+  </div>
 
-        <div>
-          <label>Semester</label>
-          <select id="semesterSelect">
-            <option>Semester 1</option>
-            <option>Semester 2</option>
-            <option>Semester 3</option>
-            <option>Semester 4</option>
-          </select>
-        </div>
+  <p id="currentPath" style="margin-top:8px;color:var(--muted)"></p>
 
-        <div>
-          <label>Subject</label>
-          <select id="subjectSelect"></select>
-        </div>
+  <div style="margin-top:12px;display:flex;gap:10px;">
+    <input id="newSubject" placeholder="Add new subject">
+    <button id="addSubjectBtn" class="glow-btn">Add Subject</button>
+    <button id="manageBtn" class="glow-btn" style="display:none;">Manage Uploads</button>
+  </div>
+</div>
 
-        <div class="full" style="margin-top:6px">
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <strong>Mode:</strong>
-            <button class="glow-btn" id="tabSyllabus">Syllabus</button>
-            <button class="glow-btn" id="tabNotes">Notes</button>
-            <button class="glow-btn" id="tabPYQ">PYQ</button>
-            <button class="glow-btn" id="tabVideos">Videos</button>
-            <button class="glow-btn" id="tabPracticals">Practicals</button>
-          </div>
-        </div>
+<!-- TABS -->
+<div class="card" style="margin-top:16px;">
+  <div class="tabs">
+    <div class="tab active" data-tab="syllabus">Syllabus</div>
+    <div class="tab" data-tab="notes">Notes</div>
+    <div class="tab" data-tab="pyq">PYQ</div>
+    <div class="tab" data-tab="videos">Videos</div>
+    <div class="tab" data-tab="practicals">Practicals</div>
+  </div>
 
-        <!-- Syllabus -->
-        <div id="panelSyllabus" class="full" style="display:none; margin-top:12px">
-          <label>Unit 1</label><textarea id="s_u1"></textarea>
-          <label>Unit 2</label><textarea id="s_u2"></textarea>
-          <label>Unit 3</label><textarea id="s_u3"></textarea>
-          <label>Unit 4</label><textarea id="s_u4"></textarea>
-          <div class="controls">
-            <button id="s_save" class="glow-btn">Save Syllabus</button>
-            <span id="s_msg" class="small"></span>
-          </div>
-        </div>
+  <!-- SYLLABUS -->
+  <div id="syllabus" class="tabpanel active">
+    <textarea id="s_u1" rows="2" placeholder="Unit 1"></textarea>
+    <textarea id="s_u2" rows="2" placeholder="Unit 2"></textarea>
+    <textarea id="s_u3" rows="2" placeholder="Unit 3"></textarea>
+    <textarea id="s_u4" rows="2" placeholder="Unit 4"></textarea>
+    <button id="s_save" class="glow-btn">Save Syllabus</button>
+    <span id="s_msg"></span>
+  </div>
 
-        <!-- Notes -->
-        <div id="panelNotes" class="full" style="display:none; margin-top:12px">
-          <div class="grid">
-            <div>
-              <label>Title</label>
-              <input id="n_title" placeholder="Notes title"/>
-            </div>
-            <div>
-              <label>Drive link (share link)</label>
-              <input id="n_link" placeholder="https://drive.google.com/..." />
-            </div>
-            <div class="full">
-              <label>Description</label>
-              <textarea id="n_desc" placeholder="Optional short description"></textarea>
-            </div>
-          </div>
-          <div class="controls">
-            <button id="n_save" class="glow-btn">Save Note</button>
-            <span id="n_msg" class="small"></span>
-          </div>
-        </div>
+  <!-- NOTES -->
+  <div id="notes" class="tabpanel">
+    <input id="n_title" placeholder="Notes title">
+    <textarea id="n_desc" rows="2" placeholder="Description"></textarea>
+    <input id="n_link" placeholder="Drive link">
+    <button id="n_save" class="glow-btn">Save Note</button>
+    <span id="n_msg"></span>
+  </div>
 
-        <!-- PYQ -->
-        <div id="panelPYQ" class="full" style="display:none; margin-top:12px">
-          <div class="grid">
-            <div>
-              <label>Title</label>
-              <input id="p_title" placeholder="PYQ title"/>
-            </div>
-            <div>
-              <label>Drive link (share link)</label>
-              <input id="p_link" placeholder="https://drive.google.com/..." />
-            </div>
-          </div>
-          <div class="controls">
-            <button id="p_save" class="glow-btn">Save PYQ</button>
-            <span id="p_msg" class="small"></span>
-          </div>
-        </div>
+  <!-- PYQ -->
+  <div id="pyq" class="tabpanel">
+    <input id="p_title" placeholder="PYQ title">
+    <input id="p_link" placeholder="Drive link">
+    <button id="p_save" class="glow-btn">Save PYQ</button>
+    <span id="p_msg"></span>
+  </div>
 
-        <!-- Videos -->
-        <div id="panelVideos" class="full" style="display:none; margin-top:12px">
-          <div class="grid">
-            <div>
-              <label>Title</label>
-              <input id="v_title" placeholder="Video / Playlist title"/>
-            </div>
-            <div>
-              <label>YouTube playlist / video URL</label>
-              <input id="v_link" placeholder="https://www.youtube.com/..." />
-            </div>
-          </div>
-          <div class="controls">
-            <button id="v_save" class="glow-btn">Save Video</button>
-            <span id="v_msg" class="small"></span>
-          </div>
-        </div>
+  <!-- VIDEOS -->
+  <div id="videos" class="tabpanel">
+    <input id="v_title" placeholder="Video / Playlist Title">
+    <input id="v_link" placeholder="YouTube link">
+    <button id="v_save" class="glow-btn">Save Video</button>
+    <span id="v_msg"></span>
+  </div>
 
-        <!-- Practicals -->
-        <div id="panelPracticals" class="full" style="display:none; margin-top:12px">
-          <div class="grid">
-            <div>
-              <label>Title</label>
-              <input id="r_title" placeholder="Practical title"/>
-            </div>
-            <div>
-              <label>Drive link (share link)</label>
-              <input id="r_link" placeholder="https://drive.google.com/..." />
-            </div>
-            <div class="full">
-              <label>Procedure / Notes</label>
-              <textarea id="r_desc"></textarea>
-            </div>
-          </div>
-          <div class="controls">
-            <button id="r_save" class="glow-btn">Save Practical</button>
-            <span id="r_msg" class="small"></span>
-          </div>
-        </div>
+  <!-- PRACTICALS -->
+  <div id="practicals" class="tabpanel">
+    <input id="r_title" placeholder="Practical Title">
+    <textarea id="r_desc" rows="2" placeholder="Procedure / Info"></textarea>
+    <input id="r_link" placeholder="Drive link">
+    <button id="r_save" class="glow-btn">Save Practical</button>
+    <span id="r_msg"></span>
+  </div>
 
-      </div>
-      <div style="margin-top:14px" class="help">Tip: Use the dropdowns to select Branch / Semester / Subject. Syllabus is stored unit-wise, notes/pyq/practicals/videos are stored as items under the composite document.</div>
-    </div>
-  </main>
+</div>
 
-  <script type="module" src="../js/admin-common.js"></script>
-  <script type="module" src="../js/firebase.js"></script>
-  <script type="module" src="../js/theme.js"></script>
+</main>
+
+<script type="module" src="../js/admin-common.js"></script>
+<script type="module" src="../js/firebase.js"></script>
+<script type="module" src="../js/theme.js"></script>
 </body>
 </html>
