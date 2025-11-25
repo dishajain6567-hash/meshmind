@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://meshmind.pages.dev/sitemap.xml
